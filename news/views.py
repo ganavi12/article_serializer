@@ -9,8 +9,8 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import Article
-from .serializers import ArticleSerializer
+from .models import Article,Journalist
+from .serializers import ArticleSerializer,JournalistSerializer
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 
@@ -81,6 +81,42 @@ class ArticleDetailApiView(APIView):
         article.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class JournalistListCreateApiView(APIView):
+    def get(self, request):
+        journalist = Journalist.objects.all()
+        serializer = JournalistSerializer(journalist, many=True,context={'request':request})
+        return Response(serializer.data)
+    def post(self, request):
+        serializer = JournalistSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class JournalistDetailApiView(APIView):
+    def get_object(self, pk):
+        journalist = get_object_or_404(Article,pk=pk)
+        return journalist
+    def get(self, request, pk):
+        journalist = self.get_object(pk)
+        serializer = JournalistSerializer(journalist)
+        return Response(serializer.data)
+    def put(self, request, pk):
+        journalist = self.get_object(pk)
+        serializer = JournalistSerializer(journalist, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, pk):
+        journalist = self.get_object(pk)
+        journalist.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+        
+        
 
         
         
